@@ -1,0 +1,15 @@
+Example directory description:
+-----------------------------
+
+For protein alignment use:
+1. 1b7fA.pdb and 1m5oC.pdb
+2. 2bnh.pdb and 1dfjI.pdb
+3. 4pti.pdb and 6pti.pdb
+4. 1e6wA.pdb and 1yb1A.pdb
+5. 2uzxB.pdb and 4wjk.pdb
+6. last but not least, capture the SARS-CoV-2 spike moving (this is only one monomer of the trimer):
+   6vxxA.pdb and 6vsbA.pdb
+
+For RNA alignment use:
+1. 2m8k.pdb and 1ymo.pdb
+2. 1u6b.pdb and 1y0q.pdb

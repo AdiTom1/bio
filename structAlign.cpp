@@ -150,8 +150,8 @@ int main(int argc, char* argv[]) {
         Vector3 a_t = targetBackBone[i].position();
         Vector3 b_t = targetBackBone[i + 1].position();
         Vector3 c_t = targetBackBone[i + 2].position();
-//        Triangle targetTriangle= Triangle(a_t, b_t, c_t);
-//        Vector3 sideLengthsT = targetTriangle.sideLengths(a_t, b_t, c_t);
+        Triangle targetTriangle= Triangle(a_t, b_t, c_t);
+        Vector3 sideLengthsT = targetTriangle.sideLengths(a_t, b_t, c_t);
 
         for (unsigned int j = 0; j < modelBackBone.size() - 2; j++) {
             Match match;
@@ -159,15 +159,15 @@ int main(int argc, char* argv[]) {
             Vector3 b_m = modelBackBone[j + 1].position();
             Vector3 c_m = modelBackBone[j + 2].position();
 
-//            Triangle modelTriangle= Triangle(a_m, b_m, c_m);
-//            Vector3 sideLengthsM = modelTriangle.sideLengths(a_m, b_m, c_m);
+            Triangle modelTriangle= Triangle(a_m, b_m, c_m);
+            Vector3 sideLengthsM = modelTriangle.sideLengths(a_m, b_m, c_m);
 
             RigidTrans3 trans_target = RigidTrans3(a_t, b_t, c_t);
             RigidTrans3 trans_model = RigidTrans3(a_m, b_m, c_m);
 
 //            RigidTrans3 trans_target = RigidTrans3(sideLengthsT);
 //            RigidTrans3 trans_model = RigidTrans3(sideLengthsM);
-            const RigidTrans3 final_trans = (!trans_model) * trans_target;
+            const RigidTrans3 final_trans =   trans_target*(!trans_model) ;
 
             // apply the transformation to all model backbone molecules
             for (unsigned int k = 0; k < modelBackBone.size(); k++) {

@@ -142,6 +142,7 @@ int main(int argc, char* argv[]) {
 
     unsigned int iMaxSize = 0;
     RigidTrans3 rtransBest;
+    Match bestMatch;
     Match match;
 
     for (unsigned int i = 0; i < targetBackBone.size() - 2; i++) {
@@ -184,7 +185,7 @@ int main(int argc, char* argv[]) {
                         match.add(*x, k, score, score);
                     }
                 }
-                result.clear();
+//                result.clear();
             }
 
             // the match class will now check for any pair clash and optimize the fit
@@ -202,6 +203,7 @@ int main(int argc, char* argv[]) {
             if (iMaxSize < match.size()) {
                 iMaxSize = match.size();
                 rtransBest = match.rigidTrans();
+                bestMatch = match;
             }
         }
     }
@@ -209,7 +211,7 @@ int main(int argc, char* argv[]) {
     cout << "Max Alignment Size: " << iMaxSize << endl;
     cout << "model size: " << modelBackBone.size() << endl;
     cout << "target size: " << targetBackBone.size() << endl;
-    cout << match.size() << '\t' << match.calculateTotalScore() << '\t' << rtransBest << '\t' << endl;
+    cout << bestMatch.size() << '\t' << bestMatch.calculateTotalScore() << '\t' << rtransBest << '\t' << endl;
 
     auto end = chrono::system_clock::now();
 
@@ -220,7 +222,7 @@ int main(int argc, char* argv[]) {
     fileTarget.close();
 
     // apply the transformation (now not in a loop) to all model and target molecules and export them to pdb's
-    wholeModel *= match.rigidTrans();
+    wholeModel *= rtransBest;
     wholeTarget += (-vectTargetMass);
 
     ofstream model;
@@ -239,7 +241,7 @@ int main(int argc, char* argv[]) {
 
 
     ////////////////////////////////////// PDB WRITING //////////////////////////////////////
-    replace_coordinates_in_pdb("1m5oC-model.pdb", "model.txt", "1m5oC-model_modified.pdb");
-    replace_coordinates_in_pdb("1b7fA-target.pdb", "target.txt", "1b7fA-target_modified.pdb");
+    replace_coordinates_in_pdb("input_files/1m5oC.pdb", "model.txt", "1m5oC-model_modified.pdb");
+    replace_coordinates_in_pdb("input_files/1b7fA.pdb", "target.txt", "1b7fA-target_modified.pdb");
 
 }

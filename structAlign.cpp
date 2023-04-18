@@ -23,47 +23,7 @@ using namespace std;
 #include <string>
 #include <vector>
 #include <sstream>
-struct Coordinate {
-    double x, y, z;
-};
-void replace_coordinates_in_pdb(const string &pdbFileName, const string &coordFileName, const string
-&outputFileName) {
-    ifstream pdbFile(pdbFileName);
-    ifstream coordFile(coordFileName);
-    ofstream outputFile(outputFileName);
 
-    if (!pdbFile.is_open() || !coordFile.is_open()) {
-        cerr << "Error opening input files." << endl;
-        return;
-    }
-
-    vector<Coordinate> newCoords;
-    double x, y, z;
-    while (coordFile >> x >> y >> z) {
-        newCoords.push_back({x, y, z});
-    }
-
-    string line;
-    size_t index = 0;
-
-    while (getline(pdbFile, line)) {
-        if (index < newCoords.size() && line.substr(0, 4) == "ATOM") {
-            string beginning = line.substr(0, 30);
-            string ending = line.substr(54);
-            outputFile << beginning
-                       << fixed << setprecision(3) << setw(8) << newCoords[index].x
-                       << setw(8) << newCoords[index].y << setw(8) << newCoords[index].z
-                       << ending << endl;
-            index++;
-        } else {
-            outputFile << line << endl;
-        }
-    }
-
-    pdbFile.close();
-    coordFile.close();
-    outputFile.close();
-}
 
 
 int main(int argc, char* argv[]) {
@@ -123,15 +83,6 @@ int main(int argc, char* argv[]) {
     };
 
 
-    // calculate center of mass
-    Vector3 vectTargetMass(0, 0, 0);
-    for (unsigned int i = 0; i < targetBackBone.size(); i++) {
-        vectTargetMass += targetBackBone[i].position();
-    }
-    vectTargetMass /= targetBackBone.size();
-
-    // transform the molecules to the center of the coordinate system
-    targetBackBone += (-vectTargetMass);
 
     // next we insert the target backcone into hash
     // this will help us to find atoms that are close faster
@@ -211,7 +162,6 @@ int main(int argc, char* argv[]) {
 
     // apply the transformation (now not in a loop) to all model and target molecules and export them to pdb's
     wholeModel *= bestMatch.rigidTrans();
-    wholeTarget += (-vectTargetMass);
 
     ofstream model;
     model.open ("model.txt");
@@ -228,8 +178,10 @@ int main(int argc, char* argv[]) {
     target.close();
 
 
-    ////////////////////////////////////// PDB WRITING //////////////////////////////////////
-    replace_coordinates_in_pdb("input_files/1m5oC.pdb", "model.txt", "1m5oC-model_modified.pdb");
-    replace_coordinates_in_pdb("input_files/1b7fA.pdb", "target.txt", "1b7fA-target_modified.pdb");
+    std::ofstream output_file( "transformed.pdb");
+    if(output_file.is_open()){
+        output_file << wholeModel;
+        output_file.close();
+    }
 
 }

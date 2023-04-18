@@ -66,8 +66,6 @@ void replace_coordinates_in_pdb(const string &pdbFileName, const string &coordFi
 }
 
 
-
-
 int main(int argc, char* argv[]) {
     // measure the run time
     auto start = chrono::system_clock::now();
@@ -96,6 +94,17 @@ int main(int argc, char* argv[]) {
         cout << "File " << argv[2] << " does not exist." << endl;
         return 0;
     }
+    string first_line;
+    bool isRNA = false;
+    fileModel.clear();
+    fileTarget.clear();
+    fileModel.seekg(0, fileModel.beg);
+    fileTarget.seekg(0, fileTarget.beg);
+
+    getline(fileModel, first_line);
+    if (first_line.find("RNA") != string::npos){
+        isRNA = true;
+    }
 
     wholeModel.readPDBfile(fileModel, PDB::AllSelector());
     wholeTarget.readPDBfile(fileTarget, PDB::AllSelector());
@@ -103,12 +112,18 @@ int main(int argc, char* argv[]) {
     fileTarget.clear();
     fileModel.seekg(0, fileModel.beg);
     fileTarget.seekg(0, fileTarget.beg);
-    modelBackBone.readPDBfile(fileModel, PDB::CAlphaSelector());
-    targetBackBone.readPDBfile(fileTarget, PDB::CAlphaSelector());
-    //TODO: choose phosphate for rna here
+
+    if (isRNA){
+        modelBackBone.readPDBfile(fileModel, PDB::PSelector());
+        targetBackBone.readPDBfile(fileTarget, PDB::PSelector());
+    }else{
+            modelBackBone.readPDBfile(fileModel, PDB::CAlphaSelector());
+            targetBackBone.readPDBfile(fileTarget, PDB::CAlphaSelector());
+
+    };
+
 
     // calculate center of mass
-    //TODO: DO THIS FOR JUST ONE AND DROP THE SECOND ON IT
     Vector3 vectTargetMass(0, 0, 0);
     for (unsigned int i = 0; i < targetBackBone.size(); i++) {
         vectTargetMass += targetBackBone[i].position();

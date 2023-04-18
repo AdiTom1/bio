@@ -143,21 +143,31 @@ int main(int argc, char* argv[]) {
     unsigned int iMaxSize = 0;
     RigidTrans3 rtransBest;
     Match bestMatch;
-    Match match;
+
 
     for (unsigned int i = 0; i < targetBackBone.size() - 2; i++) {
+
         Vector3 a_t = targetBackBone[i].position();
         Vector3 b_t = targetBackBone[i + 1].position();
         Vector3 c_t = targetBackBone[i + 2].position();
+//        Triangle targetTriangle= Triangle(a_t, b_t, c_t);
+//        Vector3 sideLengthsT = targetTriangle.sideLengths(a_t, b_t, c_t);
 
         for (unsigned int j = 0; j < modelBackBone.size() - 2; j++) {
+            Match match;
             Vector3 a_m = modelBackBone[j].position();
             Vector3 b_m = modelBackBone[j + 1].position();
             Vector3 c_m = modelBackBone[j + 2].position();
 
+//            Triangle modelTriangle= Triangle(a_m, b_m, c_m);
+//            Vector3 sideLengthsM = modelTriangle.sideLengths(a_m, b_m, c_m);
+
             RigidTrans3 trans_target = RigidTrans3(a_t, b_t, c_t);
             RigidTrans3 trans_model = RigidTrans3(a_m, b_m, c_m);
-            const RigidTrans3 final_trans = (!trans_target) * trans_model;
+
+//            RigidTrans3 trans_target = RigidTrans3(sideLengthsT);
+//            RigidTrans3 trans_model = RigidTrans3(sideLengthsM);
+            const RigidTrans3 final_trans = (!trans_model) * trans_target;
 
             // apply the transformation to all model backbone molecules
             for (unsigned int k = 0; k < modelBackBone.size(); k++) {
@@ -185,7 +195,7 @@ int main(int argc, char* argv[]) {
                         match.add(*x, k, score, score);
                     }
                 }
-//                result.clear();
+                result.clear();
             }
 
             // the match class will now check for any pair clash and optimize the fit
@@ -202,7 +212,6 @@ int main(int argc, char* argv[]) {
 
             if (iMaxSize < match.size()) {
                 iMaxSize = match.size();
-                rtransBest = match.rigidTrans();
                 bestMatch = match;
             }
         }
@@ -211,7 +220,7 @@ int main(int argc, char* argv[]) {
     cout << "Max Alignment Size: " << iMaxSize << endl;
     cout << "model size: " << modelBackBone.size() << endl;
     cout << "target size: " << targetBackBone.size() << endl;
-    cout << bestMatch.size() << '\t' << bestMatch.calculateTotalScore() << '\t' << rtransBest << '\t' << endl;
+    cout << bestMatch.size() << '\t' << bestMatch.rmsd() << '\t' << bestMatch.rigidTrans() << '\t' << endl;
 
     auto end = chrono::system_clock::now();
 
@@ -222,7 +231,7 @@ int main(int argc, char* argv[]) {
     fileTarget.close();
 
     // apply the transformation (now not in a loop) to all model and target molecules and export them to pdb's
-    wholeModel *= rtransBest;
+    wholeModel *= bestMatch.rigidTrans();
     wholeTarget += (-vectTargetMass);
 
     ofstream model;

@@ -125,19 +125,6 @@ int main(int argc, char* argv[]) {
         gHash.insert(targetBackBone[i].position(), i); // coordinate is the key to the hash, we store atom index
     }
     cout << "Size of targetBackBone: " << targetBackBone.size() << endl;
-//	for (unsigned int i = 0; i < wholeTarget.size(); i++) {
-//		cout << "Atom " << i << " position in wholeTarget: " << wholeTarget[i].position() << endl;
-//		// Try to retrieve the atom position from gHash using the query method
-//		HashResult<int> result;
-//		gHash.query(wholeTarget[i].position(), m_fDistThr, result);
-//
-//		if (!result.empty()) {
-//			int atomIndex = *result.begin();
-//			cout << "Atom " << atomIndex << " position in gHash: " << wholeTarget[atomIndex].position() << endl;
-//		} else {
-//			cout << "Atom " << i << " not found in gHash" << endl;
-//		}
-//	}
 
 
     unsigned int iMaxSize = 0;
@@ -151,23 +138,15 @@ int main(int argc, char* argv[]) {
         Vector3 b_t = targetBackBone[i + 1].position();
         Vector3 c_t = targetBackBone[i + 2].position();
         Triangle targetTriangle= Triangle(a_t, b_t, c_t);
-        Vector3 sideLengthsT = targetTriangle.sideLengths(a_t, b_t, c_t);
 
         for (unsigned int j = 0; j < modelBackBone.size() - 2; j++) {
             Match match;
             Vector3 a_m = modelBackBone[j].position();
             Vector3 b_m = modelBackBone[j + 1].position();
             Vector3 c_m = modelBackBone[j + 2].position();
-
             Triangle modelTriangle= Triangle(a_m, b_m, c_m);
-            Vector3 sideLengthsM = modelTriangle.sideLengths(a_m, b_m, c_m);
 
-            RigidTrans3 trans_target = RigidTrans3(a_t, b_t, c_t);
-            RigidTrans3 trans_model = RigidTrans3(a_m, b_m, c_m);
-
-//            RigidTrans3 trans_target = RigidTrans3(sideLengthsT);
-//            RigidTrans3 trans_model = RigidTrans3(sideLengthsM);
-            const RigidTrans3 final_trans =   trans_target*(!trans_model) ;
+            const RigidTrans3 final_trans =   targetTriangle | modelTriangle ;
 
             // apply the transformation to all model backbone molecules
             for (unsigned int k = 0; k < modelBackBone.size(); k++) {
@@ -177,12 +156,6 @@ int main(int argc, char* argv[]) {
                 // find close target molecule atoms using the hash
                 HashResult<int> result;
                 gHash.query(mol, m_fDistThr, result); // key is mol atom coordinate
-
-                // Print out the result
-//				cout << "Close target molecule atoms for model atom " << k << ":" << endl;
-//				for (auto x = result.begin(); x != result.end(); x++) {
-//					cout << "is  Target atom index: " << *x << endl;
-//				}
 
                 // check if the atoms in the result are really inside the distance threshold
                 // the hash is cube shaped, there can be atoms further than the threshold.
@@ -200,15 +173,6 @@ int main(int argc, char* argv[]) {
 
             // the match class will now check for any pair clash and optimize the fit
             match.calculateBestFit(targetBackBone, modelBackBone);
-
-//			cout << "Rigid Trans: " << match.rigidTrans() << '\n';
-
-//			int matchingParticle;
-//			for(int m=0; m<modelBackBone.size(); m++){
-//				if ((matchingParticle = match.sceneParticle(m)) >= 0){
-//					cout << m << '\t' << matchingParticle << '\n';
-//				}
-//			}
 
             if (iMaxSize < match.size()) {
                 iMaxSize = match.size();
